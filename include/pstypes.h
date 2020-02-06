@@ -29,9 +29,9 @@ typedef unsigned int uint;
 #if defined(_WIN32) || defined(__sun__) || defined(__sgi) // platforms missing (u_)int??_t
 # include <SDL/SDL_types.h>
 /* ^ apparently that used to define these */
-typedef uint16_t u_int_16_t;
-typedef uint32_t u_int_32_t;
-typedef uint64_t u_int_64_t;
+typedef uint16_t u_int16_t;
+typedef uint32_t u_int32_t;
+typedef uint64_t u_int64_t;
 #elif defined(macintosh) // misses (u_)int??_t and does not like SDL_types.h
 # include <MacTypes.h>
  typedef SInt16 int16_t;
