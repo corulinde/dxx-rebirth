@@ -17,6 +17,7 @@ COPYRIGHT 1993-1998 PARALLAX SOFTWARE CORPORATION.  ALL RIGHTS RESERVED.
  *
  */
 
+#define HERE() printf("%s @ %s:%d\n", __FUNCTION__, __FILE__, __LINE__)
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -82,10 +83,10 @@ void _pof_cfseek(int len,int type)
 int pof_read_int(ubyte *bufp)
 {
 	int i;
-
-	i = *((int *) &bufp[Pof_addr]);
+	// SGUG modified DXX
+	i = GET_INTEL_INT(&bufp[Pof_addr]);
 	Pof_addr += 4;
-	return INTEL_INT(i);
+	return i;
 
 //	if (PHYSFS_read(f,&i,sizeof(i),1) != 1)
 //		Error("Unexpected end-of-file while reading object");
@@ -101,9 +102,10 @@ size_t pof_cfread(void *dst, size_t elsize, size_t nelem, ubyte *bufp)
 	memcpy(dst, &bufp[Pof_addr], elsize*nelem);
 
 	Pof_addr += elsize*nelem;
-
-	if (Pof_addr > MODEL_BUF_SIZE)
+	HERE();
+	if (Pof_addr > MODEL_BUF_SIZE) {
 		Int3();
+	}
 
 	return nelem;
 }
@@ -115,9 +117,11 @@ short pof_read_short(ubyte *bufp)
 {
 	short s;
 
-	s = *((short *) &bufp[Pof_addr]);
+	// SGUG modified DXX
+	s = GET_INTEL_SHORT(&bufp[Pof_addr]);
 	Pof_addr += 2;
-	return INTEL_SHORT(s);
+	return s;
+
 //	if (PHYSFS_read(f,&s,sizeof(s),1) != 1)
 //		Error("Unexpected end-of-file while reading object");
 //
@@ -284,6 +288,8 @@ polymodel *read_model_file(polymodel *pm,char *filename,robot_info *r)
 	Pof_file_end = PHYSFS_read(ifile, model_buf, 1, PHYSFS_fileLength(ifile));
 	PHYSFS_close(ifile);
 
+	printf("reading %s\n", filename);
+
 	id = pof_read_int(model_buf);
 
 	if (id!=0x4f505350) /* 'OPSP' */
@@ -304,7 +310,7 @@ polymodel *read_model_file(polymodel *pm,char *filename,robot_info *r)
 
 			case ID_OHDR: {		//Object header
 				vms_vector pmmin,pmmax;
-
+				HERE();
 				pm->n_models = pof_read_int(model_buf);
 				pm->rad = pof_read_int(model_buf);
 
@@ -318,6 +324,7 @@ polymodel *read_model_file(polymodel *pm,char *filename,robot_info *r)
 			
 			case ID_SOBJ: {		//Subobject header
 				int n;
+				HERE();
 
 				n = pof_read_short(model_buf);
 
@@ -340,6 +347,7 @@ polymodel *read_model_file(polymodel *pm,char *filename,robot_info *r)
 			#ifndef DRIVE
 			case ID_GUNS: {		//List of guns on this object
 
+				HERE();
 				if (r) {
 					int i;
 					vms_vector gun_dir;
@@ -367,6 +375,7 @@ polymodel *read_model_file(polymodel *pm,char *filename,robot_info *r)
 			}
 			
 			case ID_ANIM:		//Animation data
+				HERE();
 				if (r) {
 					int n_frames,f,m;
 
@@ -388,6 +397,7 @@ polymodel *read_model_file(polymodel *pm,char *filename,robot_info *r)
 			#endif
 			
 			case ID_TXTR: {		//Texture filename list
+				HERE();
 				int n;
 				char name_buf[128];
 
@@ -400,6 +410,7 @@ polymodel *read_model_file(polymodel *pm,char *filename,robot_info *r)
 			}
 			
 			case ID_IDTA:		//Interpreter data
+				HERE();
 				pm->model_data = d_malloc(len);
 				pm->model_data_size = len;
 
@@ -417,10 +428,14 @@ polymodel *read_model_file(polymodel *pm,char *filename,robot_info *r)
 	}
 
 #ifdef WORDS_NEED_ALIGNMENT
+	HERE();
 	align_polygon_model_data(pm);
+	HERE();
 #endif
 #ifdef WORDS_BIGENDIAN
+	HERE();
 	swap_polygon_model_data(pm->model_data);
+	HERE();
 #endif
 	
 	return pm;
