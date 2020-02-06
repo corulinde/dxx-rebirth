@@ -26,7 +26,7 @@ typedef unsigned short ushort;
 typedef unsigned int uint;
 #endif
 
-#if defined(_WIN32) || defined(__sun__) // platforms missing (u_)int??_t
+#if defined(_WIN32) || defined(__sun__) || defined(__sgi) // platforms missing (u_)int??_t
 # include <SDL/SDL_types.h>
 /* ^ apparently that used to define these */
 typedef uint16_t u_int_16_t;
