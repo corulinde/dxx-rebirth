@@ -39,8 +39,13 @@ typedef struct quadint // integer 64 bit, previously called "quad"
   {
 	  union {
 		  struct {
+#ifdef DXX_WORDS_BIGENDIAN
+    int32_t high;
+    uint32_t low;
+#else
     uint32_t low;
     int32_t high;
+#endif
 		  };
 		  int64_t q;
 	  };
